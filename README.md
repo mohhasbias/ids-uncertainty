@@ -1,5 +1,7 @@
 # IDS Uncertainty Estimation — Phase 0 Replication Package
 
+[![DOI](https://zenodo.org/badge/1159494177.svg)](https://doi.org/10.5281/zenodo.18664325)
+
 ## Overview
 
 This archive contains the complete replication materials for Phase 0 (Foundation
@@ -135,11 +137,9 @@ uv run python code/analysis/evaluate_phase0.py --calculate-metrics
 
 If you use this data, please cite:
 
-> [Author(s)]. (2026). Replication Data for: Prompt-Based Uncertainty
+> Assidiqi, M. H. (2026). Replication Data for: Prompt-Based Uncertainty
 > Quantification for LLM-Assisted Intrusion Detection [Data set]. Zenodo.
-> https://doi.org/10.5281/zenodo.XXXXXXX
->
-> Replace the DOI above with the actual DOI assigned upon Zenodo upload.
+> https://doi.org/10.5281/zenodo.18664325
 
 ## License
 
