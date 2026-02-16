@@ -135,8 +135,11 @@ uv run python code/analysis/evaluate_phase0.py --calculate-metrics
 
 If you use this data, please cite:
 
-> Prompt-Based Uncertainty Quantification for LLM-Assisted Intrusion Detection.
-> Journal of Information Security and Applications (JISA), Elsevier, 2026.
+> [Author(s)]. (2026). Replication Data for: Prompt-Based Uncertainty
+> Quantification for LLM-Assisted Intrusion Detection [Data set]. Zenodo.
+> https://doi.org/10.5281/zenodo.XXXXXXX
+>
+> Replace the DOI above with the actual DOI assigned upon Zenodo upload.
 
 ## License
 
