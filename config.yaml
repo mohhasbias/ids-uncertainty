@@ -1,0 +1,364 @@
+# IDS Uncertainty Estimation Configuration
+# Phase 1 PoC: Baseline testing with limited samples
+
+# Display name mappings for workflow/progress tracking
+# Maps human-readable names (from next_steps.txt) to experimental/code terms
+display_names:
+  datasets:
+    # "Mock IDS Sample": mock-ids-sample
+    # "Mock IDS Easy": mock-ids-sample
+    # "Mock IDS Hard": mock-ids-hard
+    "CIC-IDS2017 (50 Samples)": cic-ids-2017-50-samples
+    "CIC-IDS2018 (50 Samples)": cic-ids-2018
+
+  models:
+    # NVIDIA NIM Models (Primary - switched from Groq)
+    "Llama4S": nvidia-llama4-scout
+    "Llama70B": nvidia-llama-70b
+    # "Kimi": nvidia-kimi  # Inactive: NVIDIA API structured output incompatibility (2026-02-03)
+
+    # Phase 0-H Hypothesis Test Models (Option G)
+    "GPT-OSS-20B": openai-gpt-oss-20b
+    "Qwen3-80B": qwen3-next-80b
+
+    # Deprecated: Qwen dropped - replaced by qwen3-next-80b for hypothesis test
+    # "Qwen": nvidia-qwen
+
+    # Groq models (switched to Groq for Kimi due to NVIDIA incompatibility)
+    "Kimi": groq-kimi  # Switched from nvidia-kimi (2026-02-03)
+
+    # "Llama8B": groq-llama-8b
+    # "Mixtral": groq-mixtral
+
+  experiment_types:
+    # Manuscript term -> Experimental/code term (from documentation-workflow.md)
+    "Baseline": baseline
+    "Multi-Prompt Voting": ensemble
+    "Monte Carlo Prompt": monte_carlo
+    "Ensemble Method": hybrid  # Manuscript: "Ensemble Method" (prompts × sampling)
+    "Composite": composite
+
+datasets:
+  # CIC-IDS2017 dataset (actual file exists)
+  cic-ids-2017-50-samples:
+    file: ./datasets/cicids2017_test_50.jsonl
+    format: jsonl
+    cli_param: "cicids"  # Backward compatible - existing code uses this
+    expected_samples: 50  # For progress tracking
+    fields:
+      id: id
+      description: description
+      label: label
+      attack_type: attack_type
+    defaults:
+      difficulty: medium
+      threat_level: medium
+
+  # CIC-IDS2018 dataset (file doesn't exist yet, but configured for future use)
+  cic-ids-2018:
+    file: ./datasets/cicids2018_test_50.jsonl
+    format: jsonl
+    cli_param: "cicids2018"  # New explicit parameter for CIC-IDS2018
+    expected_samples: 50  # For progress tracking
+    fields:
+      id: id
+      description: description
+      label: label
+      attack_type: attack_type
+    defaults:
+      difficulty: medium
+      threat_level: medium
+
+  # Mock dataset for initial testing without real data (easy - 100% accuracy)
+  mock-ids-sample:
+    file: ./datasets/mock_ids_sample.jsonl
+    format: jsonl
+    cli_param: "easy"  # What --dataset flag expects
+    expected_samples: 50  # For progress tracking
+    fields:
+      id: id
+      description: description
+      label: label
+      attack_type: attack_type
+    defaults:
+      difficulty: easy
+      threat_level: low
+
+  # Harder mock dataset for correlation validation (60-80% accuracy)
+  mock-ids-hard:
+    file: ./datasets/mock_ids_hard.jsonl
+    format: jsonl
+    cli_param: "hard"  # What --dataset flag expects
+    expected_samples: 20  # For progress tracking
+    description: "Harder mock dataset with ambiguous cases and sophisticated attacks"
+    fields:
+      id: id
+      description: description
+      label: label
+      attack_type: attack_type
+    defaults:
+      difficulty: medium
+      threat_level: medium
+    difficulty_distribution:
+      easy: 10  # 20%
+      medium: 20  # 40%
+      hard: 20  # 40%
+
+# LLM Models for IDS classification
+# Reusing Groq models for cost-effective testing
+llms:
+  groq-llama-70b:
+    provider: groq
+    model: llama-3.3-70b-versatile  # Updated from 3.1-70b (decommissioned)
+    temperature: 0.0  # Deterministic for baseline
+    status: active
+    cli_param: "groq-llama-70b"
+    cost_priority: 3  # Medium cost
+
+  groq-llama-8b:
+    provider: groq
+    model: llama-3.1-8b-instant
+    temperature: 0.0
+    status: active
+    cli_param: "groq-llama-8b"
+    cost_priority: 1  # Cheapest option
+
+  groq-llama4-scout:
+    provider: groq
+    model: meta-llama/llama-4-scout-17b-16e-instruct
+    temperature: 0.0
+    status: active
+    cli_param: "groq-llama4-scout"
+    cost_priority: 1  # Cheap (500K TPD)
+    rate_limits:
+      tpd: 500000  # 500K tokens per day
+
+  groq-qwen:
+    provider: groq
+    model: qwen/qwen3-32b
+    temperature: 0.0
+    status: active
+    cli_param: "groq-qwen"
+    cost_priority: 2  # Cheap (500K TPD)
+    rate_limits:
+      tpd: 500000  # 500K tokens per day
+
+  groq-kimi:
+    provider: groq
+    model: moonshotai/kimi-k2-instruct-0905
+    temperature: 0.0
+    status: active
+    cli_param: "groq-kimi"
+    cost_priority: 4  # Most expensive (300K TPD)
+    rate_limits:
+      tpd: 300000  # 300K tokens per day
+
+  groq-mixtral:
+    provider: groq
+    model: mixtral-8x7b-32768
+    temperature: 0.0
+    status: inactive  # Decommissioned by Groq (2026-02-03)
+    cli_param: "groq-mixtral"
+    cost_priority: 2  # Medium-low cost
+
+  # NVIDIA NIM Models (alternative provider for same models)
+  nvidia-llama4-scout:
+    provider: nvidia
+    model: meta/llama-4-scout-17b-16e-instruct
+    temperature: 0.0
+    status: active
+    cli_param: "nvidia-llama4-scout"
+    cost_priority: 2  # TBD based on actual usage
+    model_type: general  # Hypothesis test: control model (small tier ~17B)
+
+  nvidia-llama-70b:
+    provider: nvidia
+    model: meta/llama-3.3-70b-instruct
+    temperature: 0.0
+    status: active
+    cli_param: "nvidia-llama-70b"
+    cost_priority: 3  # Medium cost
+    model_type: general  # Hypothesis test: control model (large tier ~70B)
+
+  nvidia-qwen:
+    provider: nvidia
+    model: qwen/qwq-32b
+    temperature: 0.0
+    status: inactive  # Deprecated: replaced by qwen3-next-80b for hypothesis test
+    cli_param: "nvidia-qwen"
+    cost_priority: 2  # Medium-low cost
+
+  nvidia-kimi:
+    provider: nvidia
+    model: moonshotai/kimi-k2-instruct-0905
+    temperature: 0.0
+    status: inactive  # NVIDIA API structured output incompatibility (2026-02-03)
+    cli_param: "nvidia-kimi"
+    cost_priority: 4  # Most expensive
+    model_type: instruction  # Reference baseline for hypothesis test
+
+  # Phase 0-H Hypothesis Test Models (Option G)
+  # Testing: Reasoning models vs General models for uncertainty calibration
+
+  # OpenAI OSS - Reasoning focused (Treatment: small tier ~20B)
+  openai-gpt-oss-20b:
+    provider: nvidia  # Accessed via NVIDIA NIM
+    model: openai/gpt-oss-20b
+    temperature: 0.0
+    status: active
+    cli_param: "openai-gpt-oss-20b"
+    cost_priority: 2
+    model_type: reasoning  # Hypothesis test: treatment model
+
+  # Qwen3 - Instruction-optimized (Treatment: large tier ~80B)
+  qwen3-next-80b:
+    provider: nvidia  # Accessed via NVIDIA NIM
+    model: qwen/qwen3-next-80b-a3b-instruct # qwen3-next-80b-a3b-thinking
+    temperature: 0.0
+    status: active
+    cli_param: "qwen3-next-80b"
+    cost_priority: 3
+    model_type: reasoning  # Hypothesis test: treatment model
+
+  # For ensemble testing (multiple models)
+  ensemble-small:
+    models:
+      - groq-llama-8b
+      - groq-qwen
+    aggregation: majority_vote
+
+  # For Monte Carlo dropout simulation (same model, varied temperature)
+  monte-carlo-llama:
+    provider: groq
+    model: llama-3.3-70b-versatile  # Updated from 3.1 (decommissioned 2026-02-03)
+    temperature: 0.7  # Higher temperature for stochasticity
+    n_samples: 5
+
+# Uncertainty estimation methods configuration
+uncertainty_methods:
+  baseline:
+    name: "Baseline"  # Manuscript display name
+    description: "Direct confidence score from LLM response"
+    directory: "baseline"  # Results directory name
+    result_file: "baseline_results.jsonl"  # Output filename
+    enabled: true
+
+  ensemble:
+    name: "Multi-Prompt Voting"  # Manuscript display name (per documentation-workflow.md)
+    description: "Disagreement across multiple prompt variations (N=3, T=0)"
+    directory: "ensemble"  # Results directory name
+    result_file: "ensemble_results.jsonl"  # Output filename
+    enabled: true  # Currently implemented in ensemble_runner.py
+    n_variants: 3
+
+  monte_carlo:
+    name: "Monte Carlo Prompt"  # Manuscript display name
+    description: "Variance from repeated stochastic forward passes"
+    directory: "monte_carlo"  # Results directory name
+    result_file: "monte_carlo_results.jsonl"  # Output filename
+    enabled: true  # Implemented in monte_carlo_runner.py
+    n_samples: 5
+
+  hybrid:
+    name: "Ensemble Method"  # Manuscript display name (per documentation-workflow.md: prompts × sampling)
+    description: "Combines prompt variations with sampling (N×T approach)"
+    directory: "hybrid"  # Results directory name
+    result_file: "hybrid_results.jsonl"  # Output filename
+    enabled: true  # Implemented in hybrid_runner.py
+    consistency_weight: 0.3
+
+  composite:
+    name: "Composite"  # Manuscript display name
+    description: "Weighted combination of multiple uncertainty signals"
+    directory: "composite"  # Results directory name
+    result_file: "composite_results.jsonl"  # Output filename
+    enabled: true  # Implemented in composite_runner.py
+    weights:
+      confidence: 0.4
+      consistency: 0.3
+      entropy: 0.3
+
+# Test scenarios
+tests:
+  # Prototype test: 10 samples, single model, baseline method
+  prototype-baseline:
+    description: "Initial prototype with 10 samples and baseline uncertainty"
+    models: groq-llama-70b
+    dataset: mock-ids-sample
+    limit: 10
+    iterations: 1
+    method: baseline
+
+  # Quick validation: 50 samples, 2 models
+  quick-validation:
+    description: "Quick test with 50 samples across 2 models"
+    models:
+      - groq-llama-70b
+      - groq-qwen
+    dataset: mock-ids-sample
+    limit: 50
+    iterations: 1
+    method: baseline
+
+  # Phase 1 PoC full test: 300 samples
+  phase1-poc:
+    description: "Phase 1 PoC: 300 samples with baseline uncertainty"
+    models:
+      - groq-llama-70b
+      - groq-qwen
+      - groq-llama-8b
+    dataset: cic-ids-2017-sample
+    limit: 300
+    iterations: 1
+    method: baseline
+
+# Routing thresholds for uncertainty-based decisions
+routing:
+  # Conservative thresholds for safety-critical IDS application
+  accept_threshold: 0.85  # High confidence → accept automated decision
+  escalate_threshold: 0.60  # Medium confidence → escalate to human
+  # Below escalate_threshold → reject automated decision
+
+# Evaluation metrics configuration
+metrics:
+  # Core classification metrics
+  classification:
+    - accuracy
+    - precision
+    - recall
+    - f1_score
+    - false_positive_rate
+    - false_negative_rate
+
+  # Uncertainty calibration metrics
+  calibration:
+    - expected_calibration_error  # ECE
+    - maximum_calibration_error  # MCE
+    - brier_score
+
+  # Correlation metrics
+  correlation:
+    - confidence_accuracy_correlation
+    - selective_risk
+
+  # Routing efficiency metrics
+  routing:
+    - automation_rate
+    - routing_accuracy
+    - escalation_rate
+
+# Output configuration
+output:
+  results_dir: ./scenario_results
+  save_predictions: true
+  save_metrics: true
+  generate_plots: true
+  plot_dpi: 300
+
+# Progress tracking configuration
+progress_tracking:
+  status_symbols:
+    complete: "✅"
+    in_progress: "🔄"
+    not_started: "☐"
+    error: "⚠️"

@@ -1,0 +1,40 @@
+{
+  "title": "Replication Data for: Prompt-Based Uncertainty Quantification for LLM-Assisted Intrusion Detection (Phase 0)",
+  "upload_type": "dataset",
+  "description": "Complete replication package for Phase 0 (Foundation Validation) of the IDS uncertainty estimation study. Includes raw experiment results from 50 LLM-based intrusion detection experiments across 5 uncertainty quantification methods, 5 models, and 2 CIC-IDS benchmark datasets, along with the full experiment code, evaluation scripts, and pre-computed metrics.",
+  "creators": [
+    {
+      "name": "Anonymous",
+      "affiliation": "Anonymous"
+    }
+  ],
+  "keywords": [
+    "intrusion detection",
+    "large language models",
+    "uncertainty quantification",
+    "network security",
+    "confidence calibration",
+    "CIC-IDS2017",
+    "CIC-IDS2018",
+    "prompt engineering",
+    "selective prediction",
+    "replication data"
+  ],
+  "license": "CC-BY-4.0",
+  "access_right": "open",
+  "related_identifiers": [
+    {
+      "identifier": "https://www.unb.ca/cic/datasets/ids-2017.html",
+      "relation": "references",
+      "resource_type": "dataset",
+      "scheme": "url"
+    },
+    {
+      "identifier": "https://www.unb.ca/cic/datasets/ids-2018.html",
+      "relation": "references",
+      "resource_type": "dataset",
+      "scheme": "url"
+    }
+  ],
+  "notes": "Phase 0 foundation validation data. 50 samples per dataset, 5 models, 5 uncertainty methods. See README.md for full documentation."
+}
